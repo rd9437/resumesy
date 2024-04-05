@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="jspdf.min.js"></script>
+  <script src="script.js"></script>
+  <title>Resume Builder</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Resume Builder</h1>
+
+  <div class="container">
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <h3>Important Notice</h3>
+            <p>We do not save any data collected from you.<br>Visit <a href="https:rudransh.rf.gd">Rudransh Das</a></p>
+            <button onclick="closePopup()">Close</button>
+        </div>
+    </div>
+    <div class="form-section">
+      <h2>Header</h2>
+      <p>Include your full name and at least one way for employers to reach you.</p>
+
+      <input type="text" id="name" placeholder="Full Name: (in CAPS)" required>
+      <br>
+      <input type="text" id="city" placeholder="City:" required>
+      <br>
+      <input type="text" id="country" placeholder="Country:" required>
+      <br>
+      <input type="url" id="linkedin" placeholder="LinkedIn Profile URL:" required>
+      <br>
+      <input type="tel" id="phone" placeholder="Phone:">
+      <br>
+      <input type="email" id="email" placeholder="Email:" required>
+      <br>
+
+      <h2>Work Experience</h2>
+      <p>Start with your most recent job or internship first.</p>
+
+      <input type="text" id="job_title" placeholder="Job Title:">
+      <br>
+      <input type="text" id="employer" placeholder="Employer:">
+      <br>
+      <input type="text" id="work_city" placeholder="City:">
+      <br>
+      <input type="text" id="work_country" placeholder="Country:">
+      <br>
+      <input type="text" id="start_date" placeholder="Start Date: (dd/mm/yyyy)">
+      <br>
+      <input type="text" id="end_date" placeholder="End Date: (dd/mm/yyyy), If still working then put 'I currently work here'">
+      <br>
+      <textarea id="summary1" placeholder="Tell us about this job:" rows="5"></textarea>
+      <br>
+      <h2>Education</h2>
+      <p>Tell us about any colleges, vocational programs, or training courses you took.</p>
+      <select id="degree">
+        <option value="">Select Degree/Certificate</option>
+        <option value="High School Diploma">High School Diploma</option>
+        <option value="Bachelor's Degree">Bachelor's Degree</option>
+        <option value="Master's Degree">Master's Degree</option>
+        <option value="Ph.D.">Ph.D.</option>
+      </select>
+      <br>
+      <input type="text" id="university" placeholder="University/Institution:">
+      <br>
+      <input type="text" id="edu_city" placeholder="City:">
+      <br>
+      <input type="text" id="edu_country" placeholder="Country:">
+      <br>
+      <input type="text" id="edu_start_date" placeholder="Start Date: (dd/mm/yyyy)">
+      <br>
+      <input type="text" id="edu_end_date" placeholder="End Date: (dd/mm/yyyy)">
+      <br>
+
+      <h2>Skills</h2>
+      <p>Let’s pick your top skills. You can add up to 5 skills separated by commas (,)</p>
+      <input type="text" id="skills" placeholder="Skills (comma-separated):">
+      <br>
+      <h2>Summary</h2>
+
+      <p>Almost done! Let’s finish with a strong summary.Write about who you are, what you do, and your unique skills. </p>
+      <textarea id="summary" placeholder="Tell about yourself:" rows="5"></textarea>
+      <br>
+      <h2>Profile Photo</h2>
+      <p>Profile photo requirements: Maximum 300px x 300px, JPEG format.</p></p>
+      <label for="photo">Upload Photo:</label>
+      <input type="file" id="photo" accept="image/*">
+      <br>
+      <button type="button" id="generatePDF">Generate PDF</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const generatePDFButton = document.getElementById("generatePDF");
+
+      generatePDFButton.addEventListener("click", generatePDF);
+    });
+  </script>
+
+  <script>
+      function showPopup() {
+          document.getElementById("popup").style.display = "block";
+      }
+
+      // Function to close the popup
+      function closePopup() {
+          document.getElementById("popup").style.display = "none";
+          document.cookie = "popupShown=true; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/";
+      }
+
+      // Check if the popup has been shown before
+      function checkPopupCookie() {
+          var popupShown = document.cookie.replace(/(?:(?:^|.*;\s*)popupShown\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+          if (popupShown !== "true") {
+              showPopup();
+          }
+      }
+
+      window.onload = checkPopupCookie;
+  </script>
+
+  <div class="footer">
+    <p>&copy; 2024 Resume Builder. All rights reserved.<br>Made by Rudransh Das<br>Visit: <a href="http://rudransh.rf.gd"</a>My Portfolio</p>
+  </div>
+
+
+
+</body>
+</html>
