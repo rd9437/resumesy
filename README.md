@@ -1,6 +1,6 @@
 # Resumesy
 
-https://rd9437.github.io/resume_builder/
+https://rd9437.github.io/resumesy/
 
 Welcome to my Resume Builder! This tool allows users to easily create a professional resume by inputting their data and generating a PDF resume without saving any user data. Below you will find instructions on how to use the Resume Builder:
 
@@ -29,6 +29,6 @@ Welcome to my Resume Builder! This tool allows users to easily create a professi
 ## Support
 If you encounter any issues or have questions regarding the Resume Builder, please don't hesitate to reach out to me for assistance. 
 
-Thank you for using my Resume Builder! I hope it helps you land your dream job.
+Thank you for using Resumesy! I hope it helps you land your dream job.
 
-https://rd9437.github.io/resume_builder/
+https://rd9437.github.io/resumesy/
