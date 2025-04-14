@@ -1,6 +1,8 @@
 # Resumesy
 
-https://rd9437.github.io/resumesy/
+[![Live Demo](https://img.shields.io/badge/Live-Demo-green?style=for-the-badge)](https://rd9437.github.io/resumesy/)
+
+---
 
 Welcome to my Resume Builder! This tool allows users to easily create a professional resume by inputting their data and generating a PDF resume without saving any user data. Below you will find instructions on how to use the Resume Builder:
 
