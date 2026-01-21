@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <title>404 - Redirecting…</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>html,body{height:100%;margin:0;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111;display:flex;align-items:center;justify-content:center;background:#f8fafc}</style>
+  </head>
+  <body>
+    <div>
+      <h1 style="font-size:20px;margin:0 0 8px 0">Working on it…</h1>
+      <p style="margin:0;color:#444">Loading the app to handle this route.</p>
+    </div>
+
+    <script>
+      (function(){
+        var base = '/resumesy/';
+        var path = location.pathname + location.search + location.hash;
+        // If this is already the base, just redirect to index
+        if(path === base || path === base.slice(0,-1)){
+          location.replace(base);
+          return;
+        }
+
+        // Try to fetch the built index.html and replace document so the SPA can handle routing
+        fetch(base + 'index.html')
+          .then(function(resp){ if(!resp.ok) throw new Error('index fetch failed'); return resp.text(); })
+          .then(function(html){
+            document.open();
+            document.write(html);
+            document.close();
+            history.replaceState({}, '', path);
+          })
+          .catch(function(){
+            // fallback: go to base
+            location.replace(base);
+          });
+      })();
+    </script>
+  </body>
+</html>
