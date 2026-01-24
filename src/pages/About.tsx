@@ -114,7 +114,7 @@ const About: React.FC = () => {
                   <div className="bg-card rounded-xl shadow-lg p-6 border border-border">
                     <div className="flex items-center gap-3 mb-4">
                       <div className="w-10 h-10 rounded-lg bg-card flex items-center justify-center">
-                          <img src="/logo.png" alt="Resumesy logo" className="w-10 h-10 rounded-lg object-cover" />
+                          <img src={import.meta.env.BASE_URL + 'logo.png'} alt="Resumesy logo" className="w-10 h-10 rounded-lg object-cover" />
                       </div>
                     <div>
                       <div className="font-bold text-foreground">Resumesy</div>
@@ -280,7 +280,7 @@ const About: React.FC = () => {
             <h2 className="text-2xl font-bold text-foreground mb-4">About the Developer</h2>
 
             <div className="flex flex-col sm:flex-row items-center gap-6 bg-card rounded-xl p-6">
-              <img src="/logo.png" alt="Developer avatar" className="w-20 h-20 rounded-lg object-cover" />
+              <img src={import.meta.env.BASE_URL + 'logo.png'} alt="Developer avatar" className="w-20 h-20 rounded-lg object-cover" />
 
               <div className="text-left">
                 <div className="font-semibold text-foreground">Rudransh</div>

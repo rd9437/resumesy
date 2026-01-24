@@ -1,7 +1,7 @@
 import React, { forwardRef, useEffect, useRef, useState, useCallback } from 'react';
-import { Resume, migrateResumeSettings } from '@/types/resume';
+import { Resume, migrateResumeSettings, CompactSeparatorStyle, LevelIndicatorStyle, SubinfoStyle } from '@/types/resume';
 import { ProfessionalTemplate } from './ProfessionalTemplate';
-import { Mail, Phone, MapPin, Globe, Linkedin, Github } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe, Linkedin, Github, Twitter, BookOpen, Palette, GitBranch, Facebook, Instagram, Youtube, Video, Send, MessageCircle, MessageSquare, Hash, CircleDot, Music, Tv, Package, Database, Code2, Terminal, ShoppingBag, Calendar, Link2, Briefcase, GraduationCap, Link, Image, Layout } from 'lucide-react';
 
 interface MultiPageResumePreviewProps {
   resume: Resume;
@@ -14,14 +14,187 @@ const MM_TO_INCH = 0.0393701;
 // Shared helpers
 const getPlatformIcon = (platform: string, className: string = 'w-4 h-4'): React.ReactNode => {
   const icons: Record<string, React.ReactNode> = {
+    // Basic contact types
     email: <Mail className={className} />,
     phone: <Phone className={className} />,
     location: <MapPin className={className} />,
     website: <Globe className={className} />,
+
+    // Major social / professional
     linkedin: <Linkedin className={className} />,
     github: <Github className={className} />,
+    gitlab: <GitBranch className={className} />,
+    bitbucket: <GitBranch className={className} />,
+
+    // Developer / code platforms
+    leetcode: <Code2 className={className} />,
+    kaggle: <Database className={className} />,
+    stackoverflow: <Code2 className={className} />,
+    codepen: <Code2 className={className} />,
+    codeforces: <Code2 className={className} />,
+    git: <GitBranch className={className} />,
+    npm: <Package className={className} />,
+    npmjs: <Package className={className} />,
+
+    // Social networks
+    twitter: <Twitter className={className} />,
+    x: <Twitter className={className} />,
+    facebook: <Facebook className={className} />,
+    instagram: <Instagram className={className} />,
+    youtube: <Youtube className={className} />,
+    tiktok: <Video className={className} />,
+    snapchat: <Tv className={className} />,
+    twitch: <Tv className={className} />,
+    tumblr: <BookOpen className={className} />,
+
+    // Creative / design
+    dribbble: <Palette className={className} />,
+    behance: <Palette className={className} />,
+    figma: <Palette className={className} />,
+    artstation: <Palette className={className} />,
+    deviantart: <Palette className={className} />,
+    unsplash: <Image className={className} />,
+
+    // Media / audio
+    spotify: <Music className={className} />,
+    soundcloud: <Music className={className} />,
+    vimeo: <Tv className={className} />,
+    audioboom: <Music className={className} />,
+    deezer: <Music className={className} />,
+
+    // Messaging / chat
+    discord: <MessageSquare className={className} />,
+    telegram: <Send className={className} />,
+    whatsapp: <MessageCircle className={className} />,
+    signal: <MessageSquare className={className} />,
+    kakaotalk: <MessageCircle className={className} />,
+    wechat: <MessageSquare className={className} />,
+
+    // Communities / blogs / publishing
+    medium: <BookOpen className={className} />,
+    hashnode: <BookOpen className={className} />,
+    devto: <BookOpen className={className} />,
+    substack: <BookOpen className={className} />,
+    blogger: <BookOpen className={className} />,
+    quora: <BookOpen className={className} />,
+
+    // Research / academia
+    googlescholar: <GraduationCap className={className} />,
+    researchgate: <BookOpen className={className} />,
+    orcid: <Link2 className={className} />,
+
+    // Marketplaces / freelancing
+    upwork: <Briefcase className={className} />,
+    fiverr: <ShoppingBag className={className} />,
+    freelancer: <ShoppingBag className={className} />,
+    toptal: <ShoppingBag className={className} />,
+
+    // Education / learning
+    coursera: <BookOpen className={className} />,
+    udemy: <BookOpen className={className} />,
+    udacity: <BookOpen className={className} />,
+    khanacademy: <BookOpen className={className} />,
+
+    // Professional / misc
+    calendly: <Calendar className={className} />,
+    angel: <Briefcase className={className} />,
+    angellist: <Briefcase className={className} />,
+    linkedinlearning: <BookOpen className={className} />,
+
+    // Generic / links
+    linktree: <Link className={className} />,
+    link: <Link2 className={className} />,
+    portfolio: <Globe className={className} />,
+
+    // Payments / crypto
+    bitcoin: <Package className={className} />,
+    ethereum: <Package className={className} />,
+
+    // Misc fallbacks mapped to generic icons
+    producthunt: <Link2 className={className} />,
+    pinterest: <Link className={className} />,
+    reddit: <CircleDot className={className} />,
+    imdb: <Tv className={className} />,
+    steam: <Tv className={className} />,
+    slack: <Hash className={className} />,
+    trello: <Layout className={className} />,
+    zoom: <Video className={className} />,
+    spotifyuri: <Music className={className} />,
+    youtubechannel: <Youtube className={className} />,
+    research: <BookOpen className={className} />,
+    custom: <Link2 className={className} />,
+    // many others will fall back to globe/link when not explicitly available
   };
   return icons[platform] || <Globe className={className} />;
+};
+
+// Decode HTML entities produced by editors or storage (e.g. &lt;b&gt; -> <b>)
+const decodeHtmlEntities = (s?: string) => {
+  if (!s) return s || '';
+  try {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = s;
+    return txt.value;
+  } catch (e) {
+    return s;
+  }
+};
+
+// Helper to render compact-separated lists (bullet/pipe/comma/newline)
+const renderSeparatedItems = (
+  items: React.ReactNode[],
+  separator: CompactSeparatorStyle,
+  color: string,
+  separatorColor: string
+) => {
+  if (items.length === 0) return null;
+  if (separator === 'newline') {
+    return (
+      <div className="text-xs space-y-1" style={{ color }}>
+        {items.map((item, index) => (
+          <div key={index}>{item}</div>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div className="text-xs flex flex-wrap items-center" style={{ color }}>
+      {items.map((item, index) => (
+        <React.Fragment key={index}>
+          {item}
+          {index < items.length - 1 && (
+            <span className="mx-1" style={{ color: separatorColor }}>
+              {separator === 'pipe' ? '|' : separator === 'comma' ? ',' : '•'}
+            </span>
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+};
+
+// Sanitize preview HTML by removing inline color styles and legacy color attributes
+const sanitizePreviewHtml = (html?: string) => {
+  if (!html) return html || '';
+  try {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    tmp.querySelectorAll('[style]').forEach((el) => {
+      try { (el as HTMLElement).style.removeProperty('color'); } catch (e) {}
+    });
+    tmp.querySelectorAll('font').forEach((f) => {
+      const parent = f.parentNode;
+      if (!parent) return;
+      while (f.firstChild) parent.insertBefore(f.firstChild, f);
+      parent.removeChild(f);
+    });
+    tmp.querySelectorAll('[color]').forEach((el) => {
+      try { (el as HTMLElement).removeAttribute('color'); } catch (e) {}
+    });
+    return tmp.innerHTML;
+  } catch (e) {
+    return html;
+  }
 };
 
 const buildContactItems = (personalDetails: any) => {
@@ -324,31 +497,157 @@ const SidebarContent: React.FC<{
       {/* Render sidebar sections in order */}
       {sidebarSections.map((section) => {
         if (section.type === 'skills' && skills.length > 0) {
+          const enableGrouping = skillsSettings.enableGrouping;
+          const showGroupNames = skillsSettings.showGroupNames ?? true;
+          const groups = Array.from(new Set(skills.filter(s => s.group).map(s => s.group)));
+          const ungroupedSkills = skills.filter(s => !s.group);
+
           return (
             <div key={section.id} className="mb-6">
               {renderSidebarHeading(section.title)}
               <div className="space-y-2">
-                {skills.map((skill) => (
-                  <div key={skill.id}>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span>{skill.name}</span>
-                    </div>
-                    {skillsSettings.showLevel && (
-                      <div className="w-full bg-white/20 rounded-full h-1.5">
-                        <div
-                          className="bg-white rounded-full h-1.5"
-                          style={{ 
-                            width: `${
-                              skill.level === 'expert' ? 100 :
-                              skill.level === 'advanced' ? 75 :
-                              skill.level === 'intermediate' ? 50 : 25
-                            }%` 
-                          }}
-                        />
+                {enableGrouping && groups.length > 0 ? (
+                  (() => {
+                    const isGrid = skillsSettings.displayStyle === 'grid';
+                    const gridCols = Math.max(1, Math.min(2, skillsSettings.columns || 2));
+                    return (
+                      <>
+                                {skillsSettings.displayStyle === 'compact' ? (
+                                  (() => {
+                                    const separator = skillsSettings.compactSeparator || 'bullet';
+                                    const separatorColor = 'rgba(255,255,255,0.5)';
+                                    const groupNodes = groups.map(group => {
+                                      const names = skills.filter(s => s.group === group).map(s => s.name).join(', ');
+                                      const label = showGroupNames ? `${group}: ${names}` : names;
+                                      return <span key={group} className="font-medium">{label}</span>;
+                                    });
+                                    if (ungroupedSkills.length > 0) {
+                                      const otherNames = ungroupedSkills.map(s => s.name).join(', ');
+                                      groupNodes.push(<span key="__other" className="font-medium">{showGroupNames ? `Other: ${otherNames}` : otherNames}</span>);
+                                    }
+                                    return renderSeparatedItems(groupNodes, separator, '#fff', separatorColor);
+                                  })()
+                                ) : (
+                                  groups.map(group => (
+                                    <div key={group} className="mb-2">
+                                      {showGroupNames && (
+                                        <p className="text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>{group}:</p>
+                                      )}
+                                      {(() => {
+                                        const groupSkills = skills.filter(s => s.group === group);
+                                        const style = skillsSettings.displayStyle;
+                                        const levelStyle = skillsSettings.levelStyle || 'dots';
+                                        const filledColor = '#fff';
+                                        const emptyColor = 'rgba(255,255,255,0.25)';
+
+                                        if (style === 'grid') {
+                                          return (
+                                            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${gridCols}, minmax(0,1fr))`, gap: '6px' }}>
+                                              {groupSkills.map((skill) => (
+                                                <div key={skill.id} className="text-xs" style={{ color: '#fff' }}>{skill.name}</div>
+                                              ))}
+                                            </div>
+                                          );
+                                        }
+
+                                        if (style === 'level') {
+                                          return (
+                                            <div className="space-y-2">
+                                              {groupSkills.map((skill) => {
+                                                const val = skill.level === 'expert' ? 5 : skill.level === 'advanced' ? 4 : skill.level === 'intermediate' ? 3 : 1;
+                                                if (levelStyle === 'bar') {
+                                                  return (
+                                                    <div key={skill.id}>
+                                                      <div className="flex items-center justify-between">
+                                                        <span className="text-white">{skill.name}</span>
+                                                        <span className="text-xs text-white/80">{skill.level}</span>
+                                                      </div>
+                                                      <div className="w-full h-1.5 rounded-full overflow-hidden mt-1" style={{ backgroundColor: emptyColor }}>
+                                                        <div className="h-full rounded-full" style={{ width: `${(val / 5) * 100}%`, backgroundColor: filledColor }} />
+                                                      </div>
+                                                    </div>
+                                                  );
+                                                }
+
+                                                if (levelStyle === 'text') {
+                                                  return (
+                                                    <div key={skill.id} className="flex items-center justify-between">
+                                                      <span className="text-white">{skill.name}</span>
+                                                      <span className="text-xs text-white/80">{skill.level}</span>
+                                                    </div>
+                                                  );
+                                                }
+
+                                                return (
+                                                  <div key={skill.id} className="flex items-center gap-2">
+                                                    <span className="text-white">{skill.name}</span>
+                                                    <div className="flex gap-0.5 mt-0.5">
+                                                      {Array.from({ length: 5 }).map((_, idx) => (
+                                                        <span key={idx} className="w-2 h-2 rounded-full" style={{ backgroundColor: idx < val ? filledColor : emptyColor }} />
+                                                      ))}
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          );
+                                        }
+
+                                        return (
+                                          <div className="flex flex-wrap gap-1.5">
+                                            {groupSkills.map((skill) => (
+                                              <div key={skill.id} className="text-xs text-white">{skill.name}</div>
+                                            ))}
+                                          </div>
+                                        );
+                                      })()}
+                                    </div>
+                                  ))
+                                )}
+                        {ungroupedSkills.length > 0 && (
+                          <div>
+                            {showGroupNames && <p className="text-xs font-medium mb-1" style={{ color: 'rgba(255,255,255,0.85)' }}>Other:</p>}
+                            {isGrid ? (
+                              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${gridCols}, minmax(0,1fr))`, gap: '6px' }}>
+                                {ungroupedSkills.map(skill => (
+                                  <div key={skill.id} className="text-xs" style={{ color: '#fff' }}>{skill.name}</div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="flex flex-wrap gap-1.5">
+                                {ungroupedSkills.map((skill) => (
+                                  <div key={skill.id} className="text-xs" style={{ color: '#fff' }}>{skill.name}</div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()
+                ) : (
+                  skills.map((skill) => (
+                    <div key={skill.id}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>{skill.name}</span>
                       </div>
-                    )}
-                  </div>
-                ))}
+                      {skillsSettings.showLevel && (
+                        <div className="w-full bg-white/20 rounded-full h-1.5">
+                          <div
+                            className="bg-white rounded-full h-1.5"
+                            style={{ 
+                              width: `${
+                                skill.level === 'expert' ? 100 :
+                                skill.level === 'advanced' ? 75 :
+                                skill.level === 'intermediate' ? 50 : 25
+                              }%` 
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           );
@@ -549,7 +848,16 @@ const MainContentOnly: React.FC<{ resume: Resume }> = ({ resume }) => {
           return (
             <div key={section.id} style={isSidebarLayout ? { marginTop: `${summaryShiftPx}px` } : undefined}>
               {renderHeading(section.title)}
-              <p className="text-xs leading-relaxed">{summary}</p>
+                    {(() => {
+                      const safeSummary = decodeHtmlEntities(summary as string);
+                      const sanitizedSummary = sanitizePreviewHtml(safeSummary);
+                      const summaryColor = isSidebarLayout ? 'rgba(0,0,0,0.9)' : textColor;
+                      return (/<[^>]+>/).test(sanitizedSummary) ? (
+                        <div className="text-xs leading-relaxed" style={{ color: summaryColor }} dangerouslySetInnerHTML={{ __html: sanitizedSummary }} />
+                      ) : (
+                        <p className="text-xs leading-relaxed" style={{ color: summaryColor }}>{sanitizedSummary}</p>
+                      );
+                    })()}
             </div>
           );
         }
@@ -591,14 +899,22 @@ const MainContentOnly: React.FC<{ resume: Resume }> = ({ resume }) => {
                           className="text-xs mt-1 whitespace-pre-wrap"
                           style={{ paddingLeft: entryLayout.indentDescription ? '12px' : 0 }}
                         >
-                          {exp.description.split('\n').map((line, i) => (
-                            <div key={i}>
-                              {entryLayout.listStyle !== 'none' && line.trim() && (
-                                <span className="mr-1">{getListMarker()}</span>
-                              )}
-                              {line}
-                            </div>
-                          ))}
+                            {(() => {
+                            const safeDesc = decodeHtmlEntities(exp.description as string);
+                            const sanitizedDesc = sanitizePreviewHtml(safeDesc);
+                            return (/<[^>]+>/).test(sanitizedDesc) ? (
+                              <div dangerouslySetInnerHTML={{ __html: sanitizedDesc }} />
+                            ) : (
+                              sanitizedDesc.split('\n').map((line, i) => (
+                                <div key={i}>
+                                  {entryLayout.listStyle !== 'none' && line.trim() && (
+                                    <span className="mr-1">{getListMarker()}</span>
+                                  )}
+                                  {line}
+                                </div>
+                              ))
+                            );
+                          })()}
                         </div>
                       )}
                     </div>
@@ -634,7 +950,17 @@ const MainContentOnly: React.FC<{ resume: Resume }> = ({ resume }) => {
                         </span>
                       </div>
                       {edu.description && (
-                        <p className="text-xs mt-1">{edu.description}</p>
+                        <div className="text-xs mt-1">
+                          {(() => {
+                            const safeDesc = decodeHtmlEntities(edu.description as string);
+                            const sanitizedDesc = sanitizePreviewHtml(safeDesc);
+                            return (/<[^>]+>/).test(sanitizedDesc) ? (
+                              <div dangerouslySetInnerHTML={{ __html: sanitizedDesc }} />
+                            ) : (
+                              <p>{sanitizedDesc}</p>
+                            );
+                          })()}
+                        </div>
                       )}
                     </div>
                   );
@@ -660,7 +986,17 @@ const MainContentOnly: React.FC<{ resume: Resume }> = ({ resume }) => {
                       )}
                     </div>
                     {project.description && (
-                      <p className="text-xs mt-1">{project.description}</p>
+                      <div className="text-xs mt-1">
+                        {(() => {
+                          const safeDesc = decodeHtmlEntities(project.description as string);
+                          const sanitizedDesc = sanitizePreviewHtml(safeDesc);
+                          return (/<[^>]+>/).test(sanitizedDesc) ? (
+                            <div dangerouslySetInnerHTML={{ __html: sanitizedDesc }} />
+                          ) : (
+                            <p>{sanitizedDesc}</p>
+                          );
+                        })()}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -672,51 +1008,315 @@ const MainContentOnly: React.FC<{ resume: Resume }> = ({ resume }) => {
         // For non-sidebar layouts, render skills, languages, certifications in main content
         if (!isSidebarLayout) {
           if (section.type === 'skills' && skills.length > 0) {
+            const skillsSettings = settings.skills;
+            const enableGrouping = skillsSettings.enableGrouping;
+            const groups = Array.from(new Set(skills.filter(s => s.group).map(s => s.group)));
+            const ungroupedSkills = skills.filter(s => !s.group);
+
+            const gridCols = Math.max(1, skillsSettings.columns || 3);
+
+            const showGroupNames = skillsSettings.showGroupNames ?? true;
+            const renderGrouped = () => {
+              const style = skillsSettings.displayStyle;
+              const gridCols = Math.max(1, skillsSettings.columns || 3);
+              const levelStyle = skillsSettings.levelStyle || 'dots';
+              const filledColor = settings.colors.applyAccentTo.levelIndicators ? settings.colors.accentColor : textColor;
+              const emptyColor = '#e5e7eb';
+
+              if (style === 'compact') {
+                const separator = skillsSettings.compactSeparator || 'bullet';
+                const separatorColor = '#94a3b8';
+                const groupNodes = groups.map(group => {
+                  const names = skills.filter(s => s.group === group).map(s => s.name).join(', ');
+                  const label = showGroupNames ? `${group}: ${names}` : names;
+                  return <span key={group} className="font-medium">{label}</span>;
+                });
+                if (ungroupedSkills.length > 0) {
+                  const otherNames = ungroupedSkills.map(s => s.name).join(', ');
+                  groupNodes.push(<span key="__other" className="font-medium">{showGroupNames ? `Other: ${otherNames}` : otherNames}</span>);
+                }
+                return renderSeparatedItems(groupNodes, separator, textColor, separatorColor);
+              }
+
+              return (
+                <div className="space-y-2">
+                  {groups.map(group => (
+                    <div key={group}>
+                      {showGroupNames && (
+                        <p className="text-xs font-medium mb-1" style={{ color: `${textColor}99` }}>{group}:</p>
+                      )}
+                      {style === 'grid' ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${gridCols}, minmax(0,1fr))`, gap: '6px' }}>
+                          {skills.filter(s => s.group === group).map((skill) => (
+                            <div key={skill.id} className="text-xs" style={{ color: textColor }}>{skill.name}</div>
+                          ))}
+                        </div>
+                      ) : style === 'level' ? (
+                        <div className="space-y-2">
+                          {skills.filter(s => s.group === group).map((skill) => {
+                            const val = skill.level === 'expert' ? 5 : skill.level === 'advanced' ? 4 : skill.level === 'intermediate' ? 3 : 1;
+                            if (levelStyle === 'bar') {
+                              return (
+                                <div key={skill.id}>
+                                  <div className="flex items-center justify-between">
+                                    <span style={{ color: textColor }}>{skill.name}</span>
+                                    <span className="text-xs" style={{ color: '#94a3b8' }}>{skill.level}</span>
+                                  </div>
+                                  <div className="w-full h-1.5 rounded-full overflow-hidden mt-1" style={{ backgroundColor: emptyColor }}>
+                                    <div className="h-full rounded-full transition-all" style={{ width: `${(val / 5) * 100}%`, backgroundColor: filledColor }} />
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            if (levelStyle === 'text') {
+                              return (
+                                <div key={skill.id} className="flex items-center justify-between">
+                                  <span style={{ color: textColor }}>{skill.name}</span>
+                                  <span className="text-xs" style={{ color: '#94a3b8' }}>{skill.level}</span>
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div key={skill.id} className="flex items-center gap-2">
+                                <span style={{ color: textColor }}>{skill.name}</span>
+                                <div className="flex gap-0.5 mt-0.5">
+                                  {Array.from({ length: 5 }).map((_, idx) => (
+                                    <span key={idx} className="w-2 h-2 rounded-full" style={{ backgroundColor: idx < val ? filledColor : emptyColor }} />
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5">
+                          {skills.filter(s => s.group === group).map((skill) => (
+                            <span key={skill.id} className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: `${accentColor}15`, color: textColor }}>{skill.name}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {ungroupedSkills.length > 0 && (
+                    <div>
+                      {showGroupNames && <p className="text-xs font-medium mb-1" style={{ color: `${textColor}99` }}>Other:</p>}
+                      {style === 'grid' ? (
+                        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${gridCols}, minmax(0,1fr))`, gap: '6px' }}>
+                          {ungroupedSkills.map(skill => (
+                            <div key={skill.id} className="text-xs" style={{ color: textColor }}>{skill.name}</div>
+                          ))}
+                        </div>
+                      ) : style === 'level' ? (
+                        <div className="space-y-2">
+                          {ungroupedSkills.map((skill) => {
+                            const val = skill.level === 'expert' ? 5 : skill.level === 'advanced' ? 4 : skill.level === 'intermediate' ? 3 : 1;
+                            return (
+                              <div key={skill.id} className="flex items-center justify-between">
+                                <span style={{ color: textColor }}>{skill.name}</span>
+                                <div className="flex gap-0.5 mt-0.5">
+                                  {Array.from({ length: 5 }).map((_, idx) => (
+                                    <span key={idx} className="w-2 h-2 rounded-full" style={{ backgroundColor: idx < val ? filledColor : emptyColor }} />
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-1.5">
+                          {ungroupedSkills.map((skill) => (
+                            <span key={skill.id} className="px-2 py-0.5 rounded text-xs" style={{ backgroundColor: `${accentColor}15`, color: textColor }}>{skill.name}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            };
+
+            const renderGrid = () => (
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${gridCols}, 1fr)`, gap: '6px' }}>
+                {skills.map((skill) => (
+                  <div key={skill.id} className="text-xs" style={{ color: textColor }}>{skill.name}</div>
+                ))}
+              </div>
+            );
+
+            const renderCompact = () => {
+              const compactItems = skills.map((s) => <span key={s.id} className="font-medium">{s.name}</span>);
+              const separatorStyle = settings.skills.compactSeparator || 'bullet';
+              const separatorColor = '#94a3b8';
+              return renderSeparatedItems(compactItems, separatorStyle, textColor, separatorColor);
+            };
+
+            const renderBubble = () => (
+              <div className="flex flex-wrap gap-1.5">
+                {skills.map((skill) => (
+                  <span key={skill.id} className="px-2 py-1 text-xs rounded" style={{ backgroundColor: `${accentColor}15`, color: textColor }}>{skill.name}</span>
+                ))}
+              </div>
+            );
+
+            const content = (() => {
+              if (enableGrouping && groups.length > 0) return renderGrouped();
+              switch (skillsSettings.displayStyle) {
+                case 'grid':
+                  return renderGrid();
+                case 'compact':
+                  return renderCompact();
+                case 'level':
+                  return renderBubble();
+                default:
+                  return renderBubble();
+              }
+            })();
+
             return (
               <div key={section.id}>
                 {renderHeading(section.title)}
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill) => (
-                    <span 
-                      key={skill.id}
-                      className="px-2 py-1 text-xs rounded"
-                      style={{ backgroundColor: `${accentColor}15`, color: textColor }}
-                    >
-                      {skill.name}
-                    </span>
-                  ))}
-                </div>
+                {content}
               </div>
             );
           }
 
           if (section.type === 'languages' && languages.length > 0) {
+            const langSettings = settings.languages;
+            const columns = Math.max(1, langSettings.columns || 2);
+            const showLevel = langSettings.showLevel;
+            const levelStyle = langSettings.levelStyle || 'dots';
+
+            const getProficiencyLabel = (value?: string) => {
+              if (!value) return '';
+              return value.charAt(0).toUpperCase() + value.slice(1);
+            };
+
+            const renderLevelIndicator = (proficiency: string) => {
+              const scale: Record<string, number> = { basic: 1, conversational: 2, proficient: 3, fluent: 4, native: 5 };
+              const val = scale[proficiency] || 3;
+              const filledColor = textColor;
+              const emptyColor = '#e5e7eb';
+
+              if (levelStyle === 'bar') {
+                return (
+                  <div className="w-full h-1.5 rounded-full overflow-hidden mt-1" style={{ backgroundColor: emptyColor }}>
+                    <div className="h-full rounded-full transition-all" style={{ width: `${(val / 5) * 100}%`, backgroundColor: filledColor }} />
+                  </div>
+                );
+              }
+
+              if (levelStyle === 'text') {
+                return <span className="text-xs font-medium" style={{ color: filledColor }}>{getProficiencyLabel(proficiency)}</span>;
+              }
+
+              return (
+                <div className="flex gap-0.5 mt-0.5">
+                  {Array.from({ length: 5 }).map((_, idx) => (
+                    <span key={idx} className="w-2 h-2 rounded-full" style={{ backgroundColor: idx < val ? filledColor : emptyColor }} />
+                  ))}
+                </div>
+              );
+            };
+
+            const renderGrid = () => (
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))`, gap: '6px' }}>
+                {languages.map((lang) => (
+                  <div key={lang.id} className="text-xs font-medium" style={{ color: textColor }}>
+                    <div>{lang.name}</div>
+                    {showLevel && <div className="mt-1">{renderLevelIndicator(lang.proficiency)}</div>}
+                  </div>
+                ))}
+              </div>
+            );
+
+            const renderLevelList = () => (
+              <div className="space-y-2">
+                {languages.map((lang) => (
+                  <div key={lang.id}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium" style={{ color: textColor }}>{lang.name}</span>
+                      {showLevel && levelStyle !== 'text' && <span className="text-xs" style={{ color: '#94a3b8' }}>{getProficiencyLabel(lang.proficiency)}</span>}
+                    </div>
+                    {showLevel && <div className="mt-0.5">{renderLevelIndicator(lang.proficiency)}</div>}
+                  </div>
+                ))}
+              </div>
+            );
+
+            const renderCompact = () => {
+              const items = languages.map((l) => (
+                <span key={l.id} className="font-medium">
+                  {l.name}{showLevel ? ` (${getProficiencyLabel(l.proficiency)})` : ''}
+                </span>
+              ));
+              const separatorStyle = langSettings.compactSeparator || 'bullet';
+              const separatorColor = '#94a3b8';
+              return renderSeparatedItems(items, separatorStyle, textColor, separatorColor);
+            };
+
+            const content = (() => {
+              switch (langSettings.displayStyle) {
+                case 'grid':
+                  return renderGrid();
+                case 'level':
+                  return renderLevelList();
+                case 'compact':
+                  return renderCompact();
+                default:
+                  return renderGrid();
+              }
+            })();
+
             return (
               <div key={section.id}>
                 {renderHeading(section.title)}
-                <div className="flex flex-wrap gap-4 text-xs">
-                  {languages.map((lang) => (
-                    <span key={lang.id}>
-                      <strong>{lang.name}</strong> - <span className="capitalize">{lang.proficiency}</span>
-                    </span>
-                  ))}
-                </div>
+                {content}
               </div>
             );
           }
 
           if (section.type === 'certifications' && certifications.length > 0) {
+            const certSettings = settings.certificates;
+            const cols = Math.max(1, certSettings.columns || 2);
+            const separator = certSettings.compactSeparator || 'bullet';
+
+            const renderGrid = () => (
+              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))`, gap: `${spacing.entrySpacing}px` }}>
+                {certifications.map(cert => (
+                  <div key={cert.id} className="text-xs">
+                    <div className="font-medium">{cert.name}</div>
+                    <div className="opacity-80">{cert.issuer}{cert.date ? <span className="ml-2">{formatDate(cert.date)}</span> : null}</div>
+                  </div>
+                ))}
+              </div>
+            );
+
+            const renderCompact = () => {
+              const items = certifications.map((c) => <span key={c.id} className="font-medium">{c.name}</span>);
+              const separatorStyle = certSettings.compactSeparator || 'bullet';
+              const separatorColor = '#94a3b8';
+              return renderSeparatedItems(items, separatorStyle, textColor, separatorColor);
+            };
+
+            const renderList = () => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: `${spacing.entrySpacing}px` }}>
+                {certifications.map((cert) => (
+                  <div key={cert.id} className="text-xs">
+                    <strong>{cert.name}</strong> - {cert.issuer}{cert.date && <span className="ml-2 opacity-70">{formatDate(cert.date)}</span>}
+                  </div>
+                ))}
+              </div>
+            );
+
+            const content = certSettings.displayStyle === 'grid' ? renderGrid() : certSettings.displayStyle === 'compact' ? renderCompact() : renderList();
+
             return (
               <div key={section.id}>
                 {renderHeading(section.title)}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: `${spacing.entrySpacing}px` }}>
-                  {certifications.map((cert) => (
-                    <div key={cert.id} className="text-xs">
-                      <strong>{cert.name}</strong> - {cert.issuer}
-                      {cert.date && <span className="ml-2 opacity-70">{formatDate(cert.date)}</span>}
-                    </div>
-                  ))}
-                </div>
+                {content}
               </div>
             );
           }

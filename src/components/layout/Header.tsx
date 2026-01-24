@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({ onExportPdf, onResetZoom }) => {
       <div className="h-full px-4 flex items-center justify-between max-w-[1920px] mx-auto">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3" aria-label="Go to home">
-          <img src="/logo.png" alt="Resumesy logo" className="w-9 h-9 rounded-lg object-cover" />
+          <img src={import.meta.env.BASE_URL + 'logo.png'} alt="Resumesy logo" className="w-9 h-9 rounded-lg object-cover" />
           <span className={`text-xl font-bold text-foreground ${isBuilder ? 'uppercase' : ''}`}>RESUMESY</span>
         </Link>
 

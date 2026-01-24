@@ -372,6 +372,7 @@ export interface SkillsSettings {
   showLevel: boolean;
   columns: number;
   enableGrouping: boolean;
+  showGroupNames?: boolean;
   levelStyle?: LevelIndicatorStyle;
   compactSeparator?: CompactSeparatorStyle;
   subinfoStyle?: SubinfoStyle;
@@ -608,6 +609,7 @@ export const DEFAULT_SKILLS_SETTINGS: SkillsSettings = {
   showLevel: false,
   columns: 3,
   enableGrouping: false,
+  showGroupNames: true,
   levelStyle: 'dots',
   compactSeparator: 'bullet',
   subinfoStyle: 'dash',

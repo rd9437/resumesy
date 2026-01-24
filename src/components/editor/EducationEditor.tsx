@@ -1,4 +1,5 @@
 import React from 'react';
+import { RichTextEditor } from './RichTextEditor';
 import { Education } from '@/types/resume';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -146,12 +147,10 @@ export const EducationEditor: React.FC<EducationEditorProps> = ({ data, onChange
 
             <div>
               <label className="editor-label">Description (Optional)</label>
-              <textarea
-                className="editor-input min-h-[80px] resize-y"
-                placeholder="GPA, honors, relevant coursework, achievements..."
+              <RichTextEditor
                 value={edu.description}
-                onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
-                rows={3}
+                onChange={(html) => updateEducation(edu.id, 'description', html)}
+                placeholder="GPA, honors, relevant coursework, achievements..."
               />
             </div>
           </motion.div>

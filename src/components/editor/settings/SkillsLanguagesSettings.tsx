@@ -49,20 +49,24 @@ export const SkillsLanguagesSettings: React.FC = () => {
       : 'border-border hover:border-primary/50 text-muted-foreground'}`;
 
   // Shared column selector component
-  const ColumnSelector = ({ value, onChange }: { value: number; onChange: (cols: number) => void }) => (
+  const ColumnSelector = ({ value, onChange }: { value?: number | string; onChange: (cols: number) => void }) => (
     <div className="grid grid-cols-4 gap-2 mb-3">
-      {[1, 2, 3, 4].map((cols) => (
-        <button
-          key={cols}
-          onClick={() => onChange(cols)}
-          className={`py-2.5 rounded-xl border-2 flex justify-center gap-0.5 transition-all
-            ${value === cols ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}`}
-        >
-          {Array(cols).fill(0).map((_, i) => (
-            <div key={i} className={`w-2 h-4 rounded-sm ${value === cols ? 'bg-primary' : 'bg-muted-foreground/40'}`} />
-          ))}
-        </button>
-      ))}
+      {[1, 2, 3, 4].map((cols) => {
+        const isSelected = Number(value) === cols;
+        return (
+          <button
+            key={cols}
+            type="button"
+            onClick={() => onChange(cols)}
+            className={`py-2.5 rounded-xl border-2 flex justify-center gap-0.5 transition-all
+              ${isSelected ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}`}
+          >
+            {Array(cols).fill(0).map((_, i) => (
+              <div key={i} className={`w-2 h-4 rounded-sm ${isSelected ? 'bg-primary' : 'bg-muted-foreground/40'}`} />
+            ))}
+          </button>
+        );
+      })}
     </div>
   );
 
@@ -75,9 +79,10 @@ export const SkillsLanguagesSettings: React.FC = () => {
     onChange: (style: LevelIndicatorStyle) => void 
   }) => (
     <div className="grid grid-cols-3 gap-2 mb-3">
-      {(['text', 'dots', 'bar'] as SkillLevelStyle[]).map((style) => (
+      {(['text', 'dots', 'bar'] as LevelIndicatorStyle[]).map((style) => (
         <button
           key={style}
+          type="button"
           onClick={() => onChange(style)}
           className={getButtonClasses(value === style)}
         >
@@ -99,6 +104,7 @@ export const SkillsLanguagesSettings: React.FC = () => {
       {(['bullet', 'pipe', 'newline', 'comma'] as CompactSeparatorStyle[]).map((style) => (
         <button
           key={style}
+          type="button"
           onClick={() => onChange(style)}
           className={getButtonClasses(value === style)}
         >
@@ -122,6 +128,7 @@ export const SkillsLanguagesSettings: React.FC = () => {
         {(['dash', 'colon', 'bracket'] as SubinfoStyle[]).map((style) => (
           <button
             key={style}
+            type="button"
             onClick={() => onChange(style)}
             className={getButtonClasses(value === style)}
           >
@@ -143,6 +150,7 @@ export const SkillsLanguagesSettings: React.FC = () => {
           {(['grid', 'level', 'compact', 'bubble'] as SkillDisplayStyle[]).map((style) => (
             <button
               key={style}
+              type="button"
               onClick={() => updateSkills({ displayStyle: style })}
               className={getButtonClasses(skills.displayStyle === style)}
             >
@@ -197,6 +205,20 @@ export const SkillsLanguagesSettings: React.FC = () => {
             onCheckedChange={(checked) => updateSkills({ enableGrouping: checked })}
           />
         </div>
+
+        {/* Show Group Names when grouping enabled */}
+        {skills.enableGrouping && (
+          <div className="flex items-center justify-between py-2">
+            <Label htmlFor="skills-show-group-names" className="text-sm text-muted-foreground cursor-pointer">
+              Show Skill Group Names
+            </Label>
+            <Switch
+              id="skills-show-group-names"
+              checked={skills.showGroupNames ?? true}
+              onCheckedChange={(checked) => updateSkills({ showGroupNames: checked })}
+            />
+          </div>
+        )}
       </div>
 
       <div className="border-t border-border" />
@@ -210,6 +232,7 @@ export const SkillsLanguagesSettings: React.FC = () => {
           {(['grid', 'level', 'compact', 'bubble'] as LanguageDisplayStyle[]).map((style) => (
             <button
               key={style}
+              type="button"
               onClick={() => updateLanguages({ displayStyle: style })}
               className={getButtonClasses(languages.displayStyle === style)}
             >
@@ -277,6 +300,7 @@ export const SkillsLanguagesSettings: React.FC = () => {
           {(['grid', 'level', 'compact', 'bubble'] as ('grid' | 'level' | 'compact' | 'bubble')[]).map((style) => (
             <button
               key={style}
+              type="button"
               onClick={() => updateCertificates({ displayStyle: style as CertificatesSettings['displayStyle'] })}
               className={getButtonClasses(certificates?.displayStyle === style)}
             >

@@ -41,7 +41,7 @@ const App = () => (
       <ResumeProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter basename="/resumesy">
           <GlobalEmojicomCleanup />
           <Routes>
             <Route path="/" element={<Home />} />

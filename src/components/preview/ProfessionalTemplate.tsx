@@ -86,6 +86,42 @@ const getPlatformIcon = (platform: string, className: string = "w-3 h-3"): React
   return icons[platform] || <Link2 className={className} />;
 };
 
+// Decode HTML entities (e.g. &lt;b&gt; -> <b>) so escaped editor content renders correctly
+const decodeHtmlEntities = (s?: string) => {
+  if (!s) return s || '';
+  try {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = s;
+    return txt.value;
+  } catch (e) {
+    return s;
+  }
+};
+
+// Sanitize preview HTML by removing inline color styles and legacy color attributes
+const sanitizePreviewHtml = (html?: string) => {
+  if (!html) return html || '';
+  try {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    tmp.querySelectorAll('[style]').forEach((el) => {
+      try { (el as HTMLElement).style.removeProperty('color'); } catch (e) {}
+    });
+    tmp.querySelectorAll('font').forEach((f) => {
+      const parent = f.parentNode;
+      if (!parent) return;
+      while (f.firstChild) parent.insertBefore(f.firstChild, f);
+      parent.removeChild(f);
+    });
+    tmp.querySelectorAll('[color]').forEach((el) => {
+      try { (el as HTMLElement).removeAttribute('color'); } catch (e) {}
+    });
+    return tmp.innerHTML;
+  } catch (e) {
+    return html;
+  }
+};
+
 // Link icon component
 const LinkIcon: React.FC<{ style: 'none' | 'external' | 'chain'; color?: string }> = ({ style, color }) => {
   if (style === 'none') return null;
@@ -480,21 +516,128 @@ export const ProfessionalTemplate: React.FC<ProfessionalTemplateProps> = ({ resu
     const textColorStyle = forSidebar ? 'rgba(255,255,255,0.9)' : textColor;
     const bgColorStyle = forSidebar ? 'rgba(255,255,255,0.15)' : `${accentColor}15`;
     const enableGrouping = skillsSettings.enableGrouping;
+    const showGroupNames = skillsSettings.showGroupNames ?? true;
     
     // Group skills if grouping is enabled
     const groups = Array.from(new Set(skills.filter(s => s.group).map(s => s.group)));
     const ungroupedSkills = skills.filter(s => !s.group);
-    
+
     if (enableGrouping && groups.length > 0) {
+      const style = skillsSettings.displayStyle;
+      const gridCols = skillsSettings.columns || 3;
+      const levelStyle = skillsSettings.levelStyle || 'dots';
+      const filledColor = forSidebar ? 'rgba(255,255,255,0.95)' : (colors.applyAccentTo.levelIndicators ? accentColor : textColor);
+      const emptyColor = forSidebar ? 'rgba(255,255,255,0.25)' : '#e5e7eb';
+
+      if (style === 'compact') {
+        const separator: CompactSeparatorStyle = skillsSettings.compactSeparator || 'bullet';
+        const separatorColor = forSidebar ? 'rgba(255,255,255,0.5)' : '#94a3b8';
+        const groupNodes = groups.map((group) => {
+          const names = skills.filter(s => s.group === group).map(s => s.name).join(', ');
+          const label = showGroupNames ? `${group}: ${names}` : names;
+          return <span key={group} className="font-medium">{label}</span>;
+        });
+
+        if (ungroupedSkills.length > 0) {
+          const otherNames = ungroupedSkills.map(s => s.name).join(', ');
+          groupNodes.push(<span key="__other" className="font-medium">{showGroupNames ? `Other: ${otherNames}` : otherNames}</span>);
+        }
+
+        return (
+          <div className="space-y-2">
+            {renderSeparatedItems(groupNodes, separator, forSidebar ? textColorStyle : textColor, separatorColor)}
+          </div>
+        );
+      }
+
       return (
         <div className="space-y-2">
           {groups.map(group => (
             <div key={group}>
-              <p className="text-xs font-medium mb-1" style={{ color: forSidebar ? 'rgba(255,255,255,0.7)' : `${textColor}99` }}>
-                {group}:
-              </p>
+              {showGroupNames && (
+                <p className="text-xs font-medium mb-1" style={{ color: forSidebar ? 'rgba(255,255,255,0.7)' : `${textColor}99` }}>
+                  {group}:
+                </p>
+              )}
+              {(() => {
+                const groupSkills = skills.filter(s => s.group === group);
+
+                if (style === 'grid') {
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${gridCols}, 1fr)`, gap: '6px' }}>
+                      {groupSkills.map((skill) => (
+                        <div key={skill.id} className="text-xs" style={{ color: forSidebar ? textColorStyle : textColor }}>{skill.name}</div>
+                      ))}
+                    </div>
+                  );
+                }
+
+                if (style === 'level') {
+                  return (
+                    <div className="space-y-2">
+                      {groupSkills.map((skill) => {
+                        const val = skill.level === 'expert' ? 5 : skill.level === 'advanced' ? 4 : skill.level === 'intermediate' ? 3 : 1;
+                        if (levelStyle === 'bar') {
+                          return (
+                            <div key={skill.id}>
+                              <div className="flex items-center justify-between">
+                                <span style={{ color: forSidebar ? textColorStyle : textColor }}>{skill.name}</span>
+                                <span className="text-xs" style={{ color: forSidebar ? 'rgba(255,255,255,0.85)' : '#94a3b8' }}>{skill.level}</span>
+                              </div>
+                              <div className="w-full h-1.5 rounded-full overflow-hidden mt-1" style={{ backgroundColor: emptyColor }}>
+                                <div className="h-full rounded-full" style={{ width: `${(val / 5) * 100}%`, backgroundColor: filledColor }} />
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        if (levelStyle === 'text') {
+                          return (
+                            <div key={skill.id} className="flex items-center justify-between">
+                              <span style={{ color: forSidebar ? textColorStyle : textColor }}>{skill.name}</span>
+                              <span className="text-xs" style={{ color: forSidebar ? 'rgba(255,255,255,0.85)' : '#94a3b8' }}>{skill.level}</span>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div key={skill.id} className="flex items-center gap-2">
+                            <span style={{ color: forSidebar ? textColorStyle : textColor }}>{skill.name}</span>
+                            <div className="flex gap-0.5 mt-0.5">
+                              {Array.from({ length: 5 }).map((_, idx) => (
+                                <span key={idx} className="w-2 h-2 rounded-full" style={{ backgroundColor: idx < val ? filledColor : emptyColor }} />
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                }
+
+                // default/tags/bubble
+                return (
+                  <div className="flex flex-wrap gap-1.5">
+                    {groupSkills.map((skill) => (
+                      <span
+                        key={skill.id}
+                        className="px-2 py-0.5 rounded text-xs"
+                        style={{ backgroundColor: bgColorStyle, color: forSidebar ? textColorStyle : (colors.applyAccentTo.levelIndicators ? accentColor : textColor) }}
+                      >
+                        {skill.name}
+                      </span>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+          ))}
+
+          {ungroupedSkills.length > 0 && (
+            <div>
+              {showGroupNames && <p className="text-xs font-medium mb-1" style={{ color: forSidebar ? 'rgba(255,255,255,0.7)' : `${textColor}99` }}>Other:</p>}
               <div className="flex flex-wrap gap-1.5">
-                {skills.filter(s => s.group === group).map((skill) => (
+                {ungroupedSkills.map((skill) => (
                   <span
                     key={skill.id}
                     className="px-2 py-0.5 rounded text-xs"
@@ -504,19 +647,6 @@ export const ProfessionalTemplate: React.FC<ProfessionalTemplateProps> = ({ resu
                   </span>
                 ))}
               </div>
-            </div>
-          ))}
-          {ungroupedSkills.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {ungroupedSkills.map((skill) => (
-                <span
-                  key={skill.id}
-                  className="px-2 py-0.5 rounded text-xs"
-                  style={{ backgroundColor: bgColorStyle, color: forSidebar ? textColorStyle : (colors.applyAccentTo.levelIndicators ? accentColor : textColor) }}
-                >
-                  {skill.name}
-                </span>
-              ))}
             </div>
           )}
         </div>
@@ -543,11 +673,10 @@ export const ProfessionalTemplate: React.FC<ProfessionalTemplateProps> = ({ resu
 
     // Compact display
     if (skillsSettings.displayStyle === 'compact') {
-      return (
-        <p className="text-xs" style={{ color: forSidebar ? textColorStyle : textColor }}>
-          {skills.map(s => s.name).join(' • ')}
-        </p>
-      );
+      const compactItems = skills.map((s) => <span key={s.id} className="font-medium">{s.name}</span>);
+      const separatorStyle: CompactSeparatorStyle = skillsSettings.compactSeparator || 'bullet';
+      const separatorColor = forSidebar ? 'rgba(255,255,255,0.5)' : '#94a3b8';
+      return renderSeparatedItems(compactItems, separatorStyle, forSidebar ? textColorStyle : textColor, separatorColor);
     }
 
     // Bubble/Tags display (default)
@@ -642,7 +771,6 @@ export const ProfessionalTemplate: React.FC<ProfessionalTemplateProps> = ({ resu
               style={{ backgroundColor: chipBg, color: textColorStyle }}
             >
               {lang.name}
-              {langSettings.showLevel && renderSubinfoNode(getProficiencyLabel(lang.proficiency), subinfoStyle, secondaryColor)}
             </span>
           ))}
         </div>
@@ -755,7 +883,6 @@ export const ProfessionalTemplate: React.FC<ProfessionalTemplateProps> = ({ resu
               style={{ backgroundColor: chipBg, color: textColorStyle }}
             >
               {cert.name}
-              {renderSubinfoNode(buildCertMeta(cert), subinfoStyle, secondaryColor)}
             </span>
           ))}
         </div>
@@ -858,22 +985,30 @@ export const ProfessionalTemplate: React.FC<ProfessionalTemplateProps> = ({ resu
             </span>
           )}
         </div>
-        {description && (
-          <div 
-            className="mt-1.5 text-xs"
-            style={{ 
-              paddingLeft: entryLayout.indentDescription ? '12px' : 0,
-              color: forSidebar ? 'rgba(255,255,255,0.9)' : undefined 
-            }}
-          >
-            {description.split('\n').filter(line => line.trim()).map((line, i) => (
-              <p key={i} className="flex items-start gap-1.5 mb-0.5">
-                {getListMarker() && <span className="flex-shrink-0">{getListMarker()}</span>}
-                <span>{line.replace(/^[•\-–→]\s*/, '')}</span>
-              </p>
-            ))}
-          </div>
-        )}
+        {description && (() => {
+          const safeDesc = decodeHtmlEntities(description as string);
+          const sanitizedDesc = sanitizePreviewHtml(safeDesc);
+          return (
+            <div 
+              className="mt-1.5 text-xs"
+              style={{ 
+                paddingLeft: entryLayout.indentDescription ? '12px' : 0,
+                color: forSidebar ? 'rgba(255,255,255,0.9)' : undefined, 
+              }}
+            >
+              {(/<[^>]+>/).test(sanitizedDesc) ? (
+                <div dangerouslySetInnerHTML={{ __html: sanitizedDesc }} />
+              ) : (  
+                sanitizedDesc.split('\n').filter(line => line.trim()).map((line, i) => (
+                <p key={i} className="flex items-start gap-1.5 mb-0.5">
+                  {getListMarker() && <span className="flex-shrink-0">{getListMarker()}</span>}
+                  <span>{line.replace(/^[•\-–→]\s*/, '')}</span>
+                </p>
+               ))
+              )}
+            </div>
+          );
+        })()}
       </div>
     );
   };
@@ -900,7 +1035,16 @@ export const ProfessionalTemplate: React.FC<ProfessionalTemplateProps> = ({ resu
         return (
           <div style={getSectionContainerStyle(forSidebar)}>
             {renderHeading(sectionTitle, section.type, forSidebar)}
-            <p className="text-xs leading-relaxed" style={{ color: forSidebar ? 'rgba(255,255,255,0.9)' : undefined }}>{summary}</p>
+            {(() => {
+              const safeSummary = decodeHtmlEntities(summary as string);
+              const sanitizedSummary = sanitizePreviewHtml(safeSummary);
+              const summaryColor = forSidebar ? 'rgba(255,255,255,0.9)' : textColor;
+              return (/<[^>]+>/).test(sanitizedSummary) ? (
+                <div className="text-xs leading-relaxed" style={{ color: summaryColor }} dangerouslySetInnerHTML={{ __html: sanitizedSummary }} />
+              ) : (
+                <p className="text-xs leading-relaxed" style={{ color: summaryColor }}>{sanitizedSummary}</p>
+              );
+            })()}
           </div>
         );
       

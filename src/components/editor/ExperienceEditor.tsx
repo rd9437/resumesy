@@ -1,4 +1,5 @@
 import React from 'react';
+import { RichTextEditor } from './RichTextEditor';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -171,12 +172,10 @@ export const ExperienceEditor: React.FC<ExperienceEditorProps> = ({ data, onChan
 
                   <div>
                     <label className="editor-label">Description</label>
-                    <textarea
-                      className="editor-input min-h-[100px] resize-y"
-                      placeholder={"• Led development of new features...\n• Improved system performance by 40%...\n• Mentored junior developers..."}
+                    <RichTextEditor
                       value={exp.description}
-                      onChange={(e) => updateExperience(exp.id, 'description', e.target.value)}
-                      rows={4}
+                      onChange={(html) => updateExperience(exp.id, 'description', html)}
+                      placeholder={"• Led development of new features..."}
                     />
                   </div>
                 </motion.div>

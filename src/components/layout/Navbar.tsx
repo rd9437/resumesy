@@ -18,7 +18,7 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <img src="/logo.png" alt="Resumesy logo" className="w-8 h-8 rounded-lg object-cover" />
+            <img src={import.meta.env.BASE_URL + 'logo.png'} alt="Resumesy logo" className="w-8 h-8 rounded-lg object-cover" />
             <span className="text-xl font-bold text-foreground">RESUMESY</span>
           </Link>
 

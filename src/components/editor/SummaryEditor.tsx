@@ -1,4 +1,5 @@
 import React from 'react';
+import { RichTextEditor } from './RichTextEditor';
 
 interface SummaryEditorProps {
   data: string;
@@ -9,12 +10,10 @@ export const SummaryEditor: React.FC<SummaryEditorProps> = ({ data, onChange }) 
   return (
     <div>
       <label className="editor-label">Professional Summary</label>
-      <textarea
-        className="editor-input min-h-[120px] resize-y"
-        placeholder="Write a brief 2-4 sentence summary highlighting your experience, skills, and career goals..."
+      <RichTextEditor
         value={data}
-        onChange={(e) => onChange(e.target.value)}
-        rows={4}
+        onChange={onChange}
+        placeholder="Write a brief 2-4 sentence summary highlighting your experience, skills, and career goals..."
       />
       <p className="text-xs text-muted-foreground mt-1.5">
         Tip: Keep it concise and tailored to the job you're applying for.

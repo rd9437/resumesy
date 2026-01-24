@@ -1,4 +1,5 @@
 import React from 'react';
+import { RichTextEditor } from './RichTextEditor';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -150,12 +151,10 @@ export const ProjectsEditor: React.FC<ProjectsEditorProps> = ({ data, onChange }
 
                   <div>
                     <label className="editor-label">Description</label>
-                    <textarea
-                      className="editor-input min-h-[80px] resize-y"
-                      placeholder="Describe the project, technologies used, and your role..."
+                    <RichTextEditor
                       value={proj.description}
-                      onChange={(e) => updateProject(proj.id, 'description', e.target.value)}
-                      rows={3}
+                      onChange={(html) => updateProject(proj.id, 'description', html)}
+                      placeholder="Describe the project, technologies used, and your role..."
                     />
                   </div>
                 </motion.div>

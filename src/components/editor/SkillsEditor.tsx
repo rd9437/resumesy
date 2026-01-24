@@ -16,7 +16,8 @@ interface SkillsEditorProps {
 export const SkillsEditor: React.FC<SkillsEditorProps> = ({ data, onChange }) => {
   const [newSkill, setNewSkill] = useState('');
   const [newGroup, setNewGroup] = useState('');
-  const [showGroupInput, setShowGroupInput] = useState(false);
+  const [newLevel, setNewLevel] = useState<'beginner' | 'intermediate' | 'advanced' | 'expert'>('intermediate');
+  const [selectedGroup, setSelectedGroup] = useState<string>('none');
   const { currentResume, updateResume } = useResume();
 
   const enableGrouping = currentResume?.settings?.skills?.enableGrouping || false;
@@ -37,15 +38,30 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({ data, onChange }) =>
 
   const addSkill = () => {
     if (!newSkill.trim()) return;
-    
+
+    let groupValue: string | undefined = undefined;
+    if (enableGrouping) {
+      if (selectedGroup === 'new' && newGroup.trim()) {
+        groupValue = newGroup.trim();
+      } else if (selectedGroup && selectedGroup !== 'none') {
+        groupValue = selectedGroup;
+      }
+    }
+
     const skill: Skill = {
       id: uuidv4(),
       name: newSkill.trim(),
-      level: 'intermediate',
-      group: showGroupInput && newGroup.trim() ? newGroup.trim() : undefined,
+      level: newLevel || 'intermediate',
+      group: groupValue,
     };
     onChange([...data, skill]);
     setNewSkill('');
+    setNewLevel('intermediate');
+    if (selectedGroup === 'new') {
+      // when adding a new group, select it afterwards
+      setSelectedGroup(groupValue || '');
+      setNewGroup('');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -92,6 +108,17 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({ data, onChange }) =>
             onChange={(e) => setNewSkill(e.target.value)}
             onKeyDown={handleKeyDown}
           />
+          <select
+            value={newLevel}
+            onChange={(e) => setNewLevel(e.target.value as any)}
+            className="editor-input text-sm w-36"
+            title="Skill level (optional)"
+          >
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+            <option value="expert">Expert</option>
+          </select>
           <Button onClick={addSkill} disabled={!newSkill.trim()}>
             <Plus className="w-4 h-4" />
             Add
@@ -100,28 +127,32 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({ data, onChange }) =>
 
         {enableGrouping && (
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowGroupInput(!showGroupInput)}
-              className="text-xs text-primary hover:text-primary/80 flex items-center gap-1"
+            <label className="text-sm text-muted-foreground">Add to group:</label>
+            <select
+              value={selectedGroup}
+              onChange={(e) => setSelectedGroup(e.target.value)}
+              className="editor-input text-sm w-44"
             >
-              {showGroupInput ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-              {showGroupInput ? 'Hide group' : 'Add to group'}
-            </button>
-            {showGroupInput && (
+              <option value="none">— No group —</option>
+              {groups.map(g => (
+                <option key={g} value={g}>{g}</option>
+              ))}
+              <option value="new">+ Create new group…</option>
+            </select>
+
+            {selectedGroup === 'new' && (
               <input
                 type="text"
                 className="editor-input flex-1 text-sm"
-                placeholder="Group name (e.g., Programming Languages)"
+                placeholder="New group name"
                 value={newGroup}
                 onChange={(e) => setNewGroup(e.target.value)}
-                list="skill-groups"
               />
             )}
-            <datalist id="skill-groups">
-              {groups.map(g => (
-                <option key={g} value={g} />
-              ))}
-            </datalist>
+
+            {selectedGroup && selectedGroup !== 'none' && selectedGroup !== 'new' && (
+              <div className="text-sm px-2 py-1 bg-muted/30 rounded">Currently adding to: <strong className="ml-1">{selectedGroup}</strong></div>
+            )}
           </div>
         )}
       </div>
